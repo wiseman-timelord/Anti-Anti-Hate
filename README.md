@@ -1,8 +1,13 @@
 # Anti-Anti-Hate
-Protection of freedom of, ideas, thoughts, alternatives, to the one way of the Yahwehists.
+Status: Alpha (un-tested)
 
 ## Description
-A multi-threaded, batch and powershell, script, that securely erases all data on all drives other than C, then schedules deletion of C, then force restarts to erase C. 
+Protection of freedom of, ideas, thoughts, alternatives, to the one way of the Yahwehists. A multi-threaded, batch and powershell, script, that will in this order...
+1. Erase all data on non-C drives.
+2. Shedule secure erase of C.
+3. Force-close all non-essential processes.
+4. Force Restart and secure erase C.
+5. It would presumably Crash, during or after.
 
 ### Instruction
 1. Extract the files directly in "C:\", so you remember, its there (no brainer location) and wont accidentally click it. Then just leave them there.
