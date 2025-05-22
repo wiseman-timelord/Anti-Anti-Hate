@@ -6,8 +6,8 @@ Protection of freedom of, ideas, thoughts, alternatives, to the one way of the Y
 1. Erase all data on non-C drives.
 2. Shedule secure erase of C.
 3. Force-close all non-essential processes.
-4. Force Restart and secure erase C.
-5. It would presumably Crash, during or after.
+4. Force Restart, and then secure erase C.
+5. It would presumably Crash, during or after, erasing C. 
 
 ### Instruction
 1. Extract the files directly in "C:\", so you remember, its there (no brainer location) and wont accidentally click it. Then just leave them there.
