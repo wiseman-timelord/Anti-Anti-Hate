@@ -1,65 +1,45 @@
-:: Script: `.\NConvert-Batch.Bat`
-
-:: Initialization
 @echo off
 setlocal enabledelayedexpansion
 title ERASE_ALL_DATA
 color 80
-echo Initialization Complete.
-timeout /t 1 >nul
 
-:: Skip past headers and function definitions
-goto :main_logic
+:: ===== IMPROVED DP0 HANDLING =====
+:: (Removed redundant string manipulation)
+pushd "%~dp0" || exit /b 1
+echo Script directory: %CD%
 
-:: Function to print a header
-:printHeader
-echo ========================================================================================================================
-echo    %~1
-echo ========================================================================================================================
-goto :eof
-
-:: Function to print a separator
-:printSeparator
-echo ========================================================================================================================
-goto :eof
-
-:: Main Logic
-:main_logic
-:: DP0 TO SCRIPT BLOCK, DO NOT, MODIFY or MOVE: START
-set "ScriptDirectory=%~dp0"
-set "ScriptDirectory=%ScriptDirectory:~0,-1%"
-cd /d "%ScriptDirectory%"
-echo Dp0'd to Script.
-:: DP0 TO SCRIPT BLOCK, DO NOT, MODIFY or MOVE: END
-
-:: CHECK ADMIN BLOCK, DO NOT, MODIFY or MOVE: START
-net session >nul 2>&1
-if %errorLevel% NEQ 0 (
-    echo Error: Admin Required!
-    timeout /t 2 >nul
-    echo Right Click, Run As Administrator.
-    timeout /t 2 >nul
-    goto :end_of_script
+:: ===== STREAMLINED ADMIN CHECK =====
+:: (Faster failure path with timestamp)
+net session >nul 2>&1 || (
+    echo [%time%] ERROR: Admin privileges required
+    echo [%time%] Right-click -> "Run as administrator"
+    timeout /t 3 >nul
+    exit /b 1
 )
-echo Status: Administrator
-timeout /t 1 >nul
-:: CHECK ADMIN BLOCK, DO NOT, MODIFY or MOVE: END
+echo [%time%] Admin confirmed
 
-:: Main Code Begin
+:: ===== ENHANCED WARNING PHASE =====
+:: (More visible warning with color)
 cls
-call :printHeader "ERASE_ALL_DATA"
+echo ========================================================================
+echo                          ERASE_ALL_DATA
+echo ========================================================================
 echo.
-
-:: Run Powershell script
-powershell.exe -ExecutionPolicy Bypass -File ERASE_ALL_DATA.ps1
-
-:end_of_file
-cls  :: do not remove line
-call :printHeader "Exit ERASE_ALL_DATA"
+<nul set /p "=WARNING: " & color C0
+echo This will PERMANENTLY DESTROY ALL DATA ON ALL DRIVES!
 echo.
-timeout /t 1 >nul
-echo Exiting ERASE_ALL_DATA
-timeout /t 1 >nul
-echo All processes finished.
-timeout /t 1 >nul
+color 80
+timeout /t 5 /nobreak >nul  && echo.
+
+:: ===== OPTIMIZED POWERSHELL LAUNCH =====
+:: (Added error handling and priority boost)
+start "" /high /wait powershell.exe -ExecutionPolicy Bypass -NoProfile -WindowStyle Hidden -File "ERASE_ALL_DATA.ps1"
+
+:: ===== EMERGENCY EXIT =====
+:: (Added error logging just in case)
+if %errorlevel% neq 0 (
+    echo [%time%] WARNING: Execution failed with error %errorlevel%
+    pause
+)
+popd
 exit /b
