@@ -11,7 +11,7 @@ Protection of freedom of, ideas, thoughts, alternatives, to the one way of the Y
 
 ### Instruction
 1. Extract the files directly in "C:\", so you remember, its there (no brainer location) and wont accidentally click it. Then just leave them there.
-2. Do not run it, its going to mess your computer up, no joke. No way to get your data back, so dont do it. 
+2. Do not run it, its going to mess your computer up, so be careful, but, you could possibly edit the line  `$SafeFolder = "C:\Users"` to select  "Folder (and subfolders) to exclude from deletion", to point to your actual folder with your logins/identity etc, stuff you cant re-download.
 3. Unless there are a bunch of paid thugs at the door going on about, "2000 years of persecution aint enough" and "I'm just following orders", and possibly even "I'm definately going to heaven now", in which case you should take precautions, run to the computer, and then, so long as you are sure you want to do it, because normally there are NO CIRCUMSTANCES people would normally want to do this, that is deleting ALL your files, as you may need them, but if your sure you dont right click "Run as Administrator", and watch the fireworks. 
 4. Possibly ensuring that things such as media editing packages with unsaved files are all closed would be good to ensure restart occurs. 
 5. There is no 5 unless you messed up with 3. But no guarantees, I will not be testing this software any time soon, but will get it checked over several times.
