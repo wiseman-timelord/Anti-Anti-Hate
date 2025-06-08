@@ -13,7 +13,7 @@ Protection of freedom of, ideas, thoughts, alternatives to the ONE WAY of the `H
 2. Do not run it, its going to mess your computer up, so be careful, but, you should edit the lines of the `$SafeFolder = "C:\Users"` to select  "Folder (and subfolders) to exclude from deletion", to point to your actual folder with your logins/identity etc, stuff you cant re-download.
 3. Running the program involves `Right Click` then "Run as Administrator". It will pause with a prompt if there are issues with the "Safe Locations". 
 4. While waiting, quickly ensuring that open programs are closed promptly would be good to ensure restart occurs normally. 
-5. There is no intended 5 unless you messed up with 3.
+5. There is no intended 5, if there is you probably messed up with part, 2 or 3, or my program just doesnt work yet.
 
 ### Development
 - No plans. Possibly check over with good ai, better than deepseek.
