@@ -1,4 +1,4 @@
-# Anti-Anti-Hate
+# Destroy_ALL (formerly Anti-Anti-Hate)
 Status: Alpha (un-tested)
 
 ## Description
