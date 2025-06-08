@@ -11,7 +11,7 @@ Protection of freedom of, ideas, thoughts, alternatives to the ONE WAY of the `H
 ### Instruction
 1. Extract the files directly in "C:\", so you remember, its there (no brainer location) and wont accidentally click it. Then just leave them there. Its, kindof obvious and relevantly named, "Destroy_ALL".
 2. Do not run it, its going to mess your computer up, so be careful, but, you should edit the lines of the `$SafeFolder = "C:\Users"` to select  "Folder (and subfolders) to exclude from deletion", to point to your actual folder with your logins/identity etc, stuff you cant re-download.
-3. As and when, hench-men arrive at the door going on about, "2000 years of persecution isnt enough" and/or "I'm just following orders sir" and/or "I'm definately going to heaven for this", while showing "ID" when asked but then attempting to force entry, in which case you should take precautions, but otherwise try to remember normally there are NO CIRCUMSTANCES people would normally want to "Destroy", their or anything near their, computer. Running the program involves `Right Click` then "Run as Administrator". It will pause with a prompt if there are issues with the "Safe Locations". 
+3. Running the program involves `Right Click` then "Run as Administrator". It will pause with a prompt if there are issues with the "Safe Locations". 
 4. While waiting, quickly ensuring that open programs are closed promptly would be good to ensure restart occurs normally. 
 5. There is no intended 5 unless you messed up with 3.
 
