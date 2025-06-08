@@ -17,7 +17,7 @@ Protection of freedom of, ideas, thoughts, alternatives, to the one way of the Y
 5. There is no 5 unless you messed up with 3. But no guarantees, I will not be testing this software any time soon, but will get it checked over several times.
 
 ### Development
-- There should be a global for a "Safe Folder", that enable the user to specify what folder (inc subfolders) should be exempt from destruction, so as for, for example, your personal folder to still be ok at end (logins + selfies, etc).
+- There should be a global for a "Safe Folder", that enable the user to specify what folder (inc subfolders) should be exempt from destruction, so as for, for example, your personal folder to still be ok at end (logins + selfies, etc), incase of fuck-ups.
 
 # Notes
 - This program was created after reading that a 18 year old was arrested for having essentially the "Jolly Roger Cookbook", and I believe it is injust, because white people are KNOWN for, open-thought and open-speech, while we let Yahwehists be excused for, slavery, pedophillia, rape, racism, intollerance, ethnostates, genocide, murder, etc, because its their "Culture", then clearly white people should simlarly be let off for, "Speaking from the heart" and "having intellectual curiosity" and "Considering alternate options".
