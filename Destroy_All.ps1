@@ -13,8 +13,7 @@ A multi-threaded script that:
 
 # ===== CONFIG =====
 $WipePasses = 1  # Set to 3 for DoD 5220.22-M compliance (slower)
-$SafeFolders = "C:\Users"  # Default safe folder (edit this line!)
-$SafeFoldersCsv = $null    # Path to CSV file with folders to preserve (optional)
+$SafeFolders = "C:\Users"  # Comma-separated list of folders to preserve (e.g., "C:\Users,E:\Personal")
 
 # ===== FUNCTIONS =====
 function Invoke-TotalWipe {
@@ -48,11 +47,7 @@ Write-Host "`nCurrent safe folders: $SafeFolders" -ForegroundColor Yellow
 Write-Host "Edit the script to change safe folders before running!`n" -ForegroundColor Yellow
 
 # ===== SAFE FOLDER PROCESSING =====
-if ($SafeFoldersCsv -and (Test-Path $SafeFoldersCsv)) {
-    $safeFoldersArray = Import-Csv $SafeFoldersCsv | ForEach-Object { $_.Path.Trim() }
-} else {
-    $safeFoldersArray = $SafeFolders.Split(',') | ForEach-Object { $_.Trim() }
-}
+$safeFoldersArray = $SafeFolders.Split(',') | ForEach-Object { $_.Trim() }
 
 # Remove duplicates and validate paths
 $safeFoldersArray = $safeFoldersArray | Sort-Object -Unique | Where-Object { $_ -ne "" }
